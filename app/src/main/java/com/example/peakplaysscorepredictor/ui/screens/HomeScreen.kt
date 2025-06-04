@@ -1,6 +1,9 @@
 package com.example.peakplaysscorepredictor.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,12 +25,31 @@ fun HomeScreen(navController: NavController) {
             containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f),
             topBar = {
                 TopAppBar(
-                    title = { Text("Score Predictor", color = Color.White) },
+                    title = { Text("PL Score Predictor", color = Color.White) },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
                         titleContentColor = Color.White
                     )
                 )
+            },
+            bottomBar = {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+                    contentColor = Color.White
+                ) {
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.List, contentDescription = "Teams", tint = Color.White) },
+                        label = { Text("Teams", color = Color.White) },
+                        selected = false,
+                        onClick = { navController.navigate("teams") }
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.PlayArrow, contentDescription = "Predict", tint = Color.White) },
+                        label = { Text("Predict", color = Color.White) },
+                        selected = false,
+                        onClick = { navController.navigate("score_predictor") }
+                    )
+                }
             }
         ) { paddingValues ->
             Column(
@@ -53,19 +75,6 @@ fun HomeScreen(navController: NavController) {
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 32.dp)
                 )
-                
-                Button(
-                    onClick = { navController.navigate("score_predictor") },
-                    modifier = Modifier
-                        .fillMaxWidth(0.7f)
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-                        contentColor = Color.White
-                    )
-                ) {
-                    Text("Start Predicting")
-                }
             }
         }
     }
