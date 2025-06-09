@@ -19,6 +19,7 @@ public interface FootballAPIService {
             @Query("team") int teamId,
             @Query("season") int season,
             @Query("league") int league,
-            @Header("x-apisports-key") String apiSportsKey
+            @Header("x-apisports-key") String apiSportsKey,
+            @Query("page") int page
     );
 }

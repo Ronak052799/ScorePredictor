@@ -4,6 +4,7 @@ import android.util.Log;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,11 +19,11 @@ public class FootballRepository {
 
     public interface DataCallback {
         void onSuccess(Map<String, List<APIResponseWrapper.PlayerWrapper>> teamPlayerMap);
+
         void onError(String error);
     }
 
     public void fetchTeamsAndPlayerStats(int season, DataCallback callback) {
-        // First API call - get all Premier League teams
         Call<APIPremierLeagueTeams> teamsCall = apiService.getTeams(39, season, APIClient.getApiKey());
 
         teamsCall.enqueue(new Callback<APIPremierLeagueTeams>() {
@@ -44,51 +45,79 @@ public class FootballRepository {
         });
     }
 
-    private void fetchPlayerStatsForAllTeams(List<APIPremierLeagueTeams.TeamData> teams,
-                                             int season, DataCallback callback) {
+    public void fetchPlayerStatsForAllTeams(List<APIPremierLeagueTeams.TeamData> teams,
+                                            int season, DataCallback callback) {
         Map<String, List<APIResponseWrapper.PlayerWrapper>> teamPlayerMap = new HashMap<>();
-        int[] completedCalls = {0}; // Array to make it effectively final for lambda
 
-        for (APIPremierLeagueTeams.TeamData teamData : teams) {
-            int teamId = teamData.getTeam().getId();
-            String teamName = teamData.getTeam().getName();
+        new Thread(() -> {
+            int totalTeams = teams.size();
+            int completed = 0;
 
-            Call<APIResponseWrapper.apiWrapper> playerCall =
-                    apiService.getPlayerStats(teamId, season, 39, APIClient.getApiKey());
+            for (APIPremierLeagueTeams.TeamData teamData : teams) {
+                int teamId = teamData.getTeam().getId();
+                String teamName = teamData.getTeam().getName();
+                List<APIResponseWrapper.PlayerWrapper> allPlayers = new ArrayList<>();
 
-            playerCall.enqueue(new Callback<APIResponseWrapper.apiWrapper>() {
-                @Override
-                public void onResponse(Call<APIResponseWrapper.apiWrapper> call,
-                                       Response<APIResponseWrapper.apiWrapper> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        List<APIResponseWrapper.PlayerWrapper> players = response.body().getResponse();
-                        if (players != null) {
-                            teamPlayerMap.put(teamName, players);
-                            Log.d(TAG, "Successfully fetched " + players.size() + " players for " + teamName);
+                int page = 1;
+                int totalPages = 1; // will be updated after first response
+
+                do {
+                    try {
+                        Response<APIResponseWrapper.apiWrapper> response = apiService
+                                .getPlayerStats(teamId, season, 39, APIClient.getApiKey(), page)
+                                .execute(); // blocking call
+
+                        if (response.isSuccessful() && response.body() != null) {
+                            APIResponseWrapper.apiWrapper body = response.body();
+
+                            if (body.getResponse() != null) {
+                                allPlayers.addAll(body.getResponse());
+                            }
+
+                            // Update total pages on first response
+                            if (page == 1 && body.getPaging() != null) {
+                                totalPages = body.getPaging().getTotal();
+                            }
+
+                            Log.d(TAG, "Fetched page " + page + " for " + teamName);
+                        } else {
+                            Log.e(TAG, "Failed page " + page + " for " + teamName + ": " + response.message());
+                            break;
                         }
-                    } else {
-                        Log.e(TAG, "Failed to fetch players for " + teamName + ": " + response.message());
+
+                    } catch (Exception e) {
+                        Log.e(TAG, "Exception fetching page " + page + " for " + teamName, e);
+                        break;
                     }
 
-                    // Check if all calls are completed
-                    completedCalls[0]++;
-                    if (completedCalls[0] == teams.size()) {
-                        callback.onSuccess(teamPlayerMap);
+                    page++;
+
+                    if (page <= totalPages) {
+                        try {
+                            Thread.sleep(6500); // delay between pages
+                        } catch (InterruptedException e) {
+                            Log.e(TAG, "Sleep interrupted", e);
+                        }
+                    }
+
+                } while (page <= totalPages);
+
+                teamPlayerMap.put(teamName, allPlayers);
+                Log.d(TAG, "Finished " + teamName + " with " + allPlayers.size() + " players");
+
+                completed++;
+                if (completed < totalTeams) {
+                    try {
+                        Thread.sleep(6500); // delay between teams
+                    } catch (InterruptedException e) {
+                        Log.e(TAG, "Sleep interrupted", e);
                     }
                 }
+            }
 
-                @Override
-                public void onFailure(Call<APIResponseWrapper.apiWrapper> call, Throwable t) {
-                    Log.e(TAG, "Failed to fetch players for " + teamName, t);
-
-                    // Still count this as completed to avoid hanging
-                    completedCalls[0]++;
-                    if (completedCalls[0] == teams.size()) {
-                        callback.onSuccess(teamPlayerMap);
-                    }
-                }
-            });
-        }
+            callback.onSuccess(teamPlayerMap);
+        }).start();
     }
+
 
 }

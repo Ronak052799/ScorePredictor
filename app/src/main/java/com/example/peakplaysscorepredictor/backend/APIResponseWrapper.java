@@ -1,23 +1,57 @@
 package com.example.peakplaysscorepredictor.backend;
-import java.util.List;
-//api call: https://v3.football.api-sports.io/teams?league=39&season=2023
-//This class will take in the team Id from the Team Wrapper class to get The TeamID
-//The TeamID will be needed so we can make a api call that gets all of stats from the prem teams that season
 
-//Class: Response wrapper
+import java.util.List;
+
+// API Call: https://v3.football.api-sports.io/players?team={teamId}&season={season}&league={league}
+// This class maps the full response including player stats and pagination metadata.
+
 public class APIResponseWrapper {
-    public static class apiWrapper{
+
+    // Main response wrapper class for pagination and player list
+    public static class apiWrapper {
         private List<PlayerWrapper> response;
+        private Paging paging;
 
         public List<PlayerWrapper> getResponse() {
             return response;
         }
+
         public void setResponse(List<PlayerWrapper> response) {
             this.response = response;
         }
+
+        public Paging getPaging() {
+            return paging;
+        }
+
+        public void setPaging(Paging paging) {
+            this.paging = paging;
+        }
     }
 
-    //Class: Player Statistic Wrapper
+    // Paging metadata class (for current/total pages)
+    public static class Paging {
+        private int current;
+        private int total;
+
+        public int getCurrent() {
+            return current;
+        }
+
+        public void setCurrent(int current) {
+            this.current = current;
+        }
+
+        public int getTotal() {
+            return total;
+        }
+
+        public void setTotal(int total) {
+            this.total = total;
+        }
+    }
+
+    // Class: Player Statistic Wrapper
     public static class PlayerWrapper {
         private Player player;
         private List<Statistics> statistics;
@@ -25,6 +59,7 @@ public class APIResponseWrapper {
         public Player getPlayer() {
             return player;
         }
+
         public void setPlayer(Player player) {
             this.player = player;
         }
@@ -32,6 +67,7 @@ public class APIResponseWrapper {
         public List<Statistics> getStatistics() {
             return statistics;
         }
+
         public void setStatistics(List<Statistics> statistics) {
             this.statistics = statistics;
         }
@@ -45,6 +81,7 @@ public class APIResponseWrapper {
         public int getId() {
             return id;
         }
+
         public void setId(int id) {
             this.id = id;
         }
@@ -52,6 +89,7 @@ public class APIResponseWrapper {
         public String getName() {
             return name;
         }
+
         public void setName(String name) {
             this.name = name;
         }
@@ -59,6 +97,7 @@ public class APIResponseWrapper {
         public boolean isInjured() {
             return injured;
         }
+
         public void setInjured(boolean injured) {
             this.injured = injured;
         }
@@ -73,6 +112,7 @@ public class APIResponseWrapper {
         public Games getGames() {
             return games;
         }
+
         public void setGames(Games games) {
             this.games = games;
         }
@@ -80,6 +120,7 @@ public class APIResponseWrapper {
         public Goals getGoals() {
             return goals;
         }
+
         public void setGoals(Goals goals) {
             this.goals = goals;
         }
@@ -87,6 +128,7 @@ public class APIResponseWrapper {
         public Tackles getTackles() {
             return tackles;
         }
+
         public void setTackles(Tackles tackles) {
             this.tackles = tackles;
         }
@@ -94,6 +136,7 @@ public class APIResponseWrapper {
         public Duels getDuels() {
             return duels;
         }
+
         public void setDuels(Duels duels) {
             this.duels = duels;
         }
@@ -107,6 +150,7 @@ public class APIResponseWrapper {
         public String getPosition() {
             return position;
         }
+
         public void setPosition(String position) {
             this.position = position;
         }
@@ -114,6 +158,7 @@ public class APIResponseWrapper {
         public String getRating() {
             return rating;
         }
+
         public void setRating(String rating) {
             this.rating = rating;
         }
@@ -121,6 +166,7 @@ public class APIResponseWrapper {
         public Integer getMinutes() {
             return minutes;
         }
+
         public void setMinutes(Integer minutes) {
             this.minutes = minutes;
         }
@@ -132,19 +178,34 @@ public class APIResponseWrapper {
         private Integer saves;
         private Integer conceded;
 
-        public Integer getTotal() { return total; }
-        public void setTotal(Integer total) { this.total = total; }
+        public Integer getTotal() {
+            return total;
+        }
 
-        public Integer getAssists() { return assists; }
-        public void setAssists(Integer assists) { this.assists = assists; }
+        public void setTotal(Integer total) {
+            this.total = total;
+        }
 
-        public Integer getSaves() { return saves; }
+        public Integer getAssists() {
+            return assists;
+        }
+
+        public void setAssists(Integer assists) {
+            this.assists = assists;
+        }
+
+        public Integer getSaves() {
+            return saves;
+        }
+
         public void setSaves(Integer saves) {
-            this.saves = saves; }
+            this.saves = saves;
+        }
 
         public Integer getConceded() {
             return conceded;
         }
+
         public void setConceded(Integer conceded) {
             this.conceded = conceded;
         }
@@ -157,6 +218,7 @@ public class APIResponseWrapper {
         public Integer getTotal() {
             return total;
         }
+
         public void setTotal(Integer total) {
             this.total = total;
         }
@@ -164,6 +226,7 @@ public class APIResponseWrapper {
         public Integer getInterceptions() {
             return interceptions;
         }
+
         public void setInterceptions(Integer interceptions) {
             this.interceptions = interceptions;
         }
@@ -176,6 +239,7 @@ public class APIResponseWrapper {
         public Integer getTotal() {
             return total;
         }
+
         public void setTotal(Integer total) {
             this.total = total;
         }
@@ -183,9 +247,9 @@ public class APIResponseWrapper {
         public Integer getWon() {
             return won;
         }
+
         public void setWon(Integer won) {
             this.won = won;
         }
     }
 }
-

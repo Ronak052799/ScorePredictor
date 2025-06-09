@@ -14,8 +14,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.peakplaysscorepredictor.backend.FootballRepository
+import com.example.peakplaysscorepredictor.backend.APIResponseWrapper
 import com.example.peakplaysscorepredictor.ui.theme.GalaxyBackground
 import com.example.peakplaysscorepredictor.ui.viewmodels.ScorePredictorViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,6 +26,9 @@ fun ScorePredictorScreen(
     navController: NavController,
     viewModel: ScorePredictorViewModel = viewModel()
 ) {
+    val footballRepo = remember { FootballRepository() }
+    var fetchStatus by remember { mutableStateOf("Idle") }
+    var playerData by remember { mutableStateOf<Map<String, List<APIResponseWrapper.PlayerWrapper>>>(emptyMap()) }
     var homeTeam by remember { mutableStateOf("") }
     var awayTeam by remember { mutableStateOf("") }
     var predictedScore by remember { mutableStateOf("") }
@@ -113,6 +119,76 @@ fun ScorePredictorScreen(
                 ) {
                     Text("Predict Score")
                 }
+
+                // ===== New button to test API call =====
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+                        fetchStatus = "Fetching data..."
+                        footballRepo.fetchTeamsAndPlayerStats(2023, object : FootballRepository.DataCallback {
+                            override fun onSuccess(teamPlayerMap: Map<String, List<com.example.peakplaysscorepredictor.backend.APIResponseWrapper.PlayerWrapper>>) {
+                                fetchStatus = "Fetched data for ${teamPlayerMap.size} teams"
+                                playerData = teamPlayerMap
+                                android.util.Log.d("ScorePredictorScreen", fetchStatus)
+                            }
+
+                            override fun onError(error: String) {
+                                fetchStatus = "Error: $error"
+                                android.util.Log.e("ScorePredictorScreen", error)
+                            }
+                        })
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.9f),
+                        contentColor = Color.White
+                    )
+
+                ) {
+                    Text("Fetch Player Stats (Test API)")
+                }
+
+                Text(
+                    text = fetchStatus,
+                    color = Color.White,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+                if (playerData.isNotEmpty()) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    ) {
+                        playerData.forEach { (teamName, players) ->
+                            item {
+                                Text(
+                                    text = "Team: $teamName",
+                                    color = Color.Yellow,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                            }
+                            items(players.take(5), key = { it.player.id }) { playerWrapper ->
+                                val player = playerWrapper.player
+                                val stats = playerWrapper.statistics.firstOrNull()
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 8.dp)
+                                ) {
+                                    Text("• ${player.name} (${stats?.games?.position ?: "N/A"})", color = Color.White)
+                                    Text("  - Goals: ${stats?.goals?.total ?: "N/A"}", color = Color.White)
+                                    Text("  - Assists: ${stats?.goals?.assists ?: "N/A"}", color = Color.White)
+                                    Text("  - Rating: ${stats?.games?.rating ?: "N/A"}", color = Color.White)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // =====================================
 
                 if (predictedScore.isNotEmpty()) {
                     Card(

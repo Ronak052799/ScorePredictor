@@ -6,7 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.peakplaysscorepredictor.ui.screens.HomeScreen
 import com.example.peakplaysscorepredictor.ui.screens.ScorePredictorScreen
-import com.example.peakplaysscorepredictor.ui.screens.TeamsScreen
+//import com.example.peakplaysscorepredictor.ui.screens.TeamsScreen
 
 @Composable
 fun ScorePredictorApp() {
@@ -19,8 +19,8 @@ fun ScorePredictorApp() {
         composable("score_predictor") {
             ScorePredictorScreen(navController)
         }
-        composable("teams") {
-            TeamsScreen(navController)
-        }
+        //composable("teams") {
+       //     TeamsScreen(navController)
+       // }
     }
 } 
