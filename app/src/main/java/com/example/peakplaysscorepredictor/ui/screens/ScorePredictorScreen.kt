@@ -19,7 +19,6 @@ import com.example.peakplaysscorepredictor.backend.APIResponseWrapper
 import com.example.peakplaysscorepredictor.ui.theme.GalaxyBackground
 import com.example.peakplaysscorepredictor.ui.viewmodels.ScorePredictorViewModel
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScorePredictorScreen(
@@ -36,7 +35,7 @@ fun ScorePredictorScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         GalaxyBackground()
-        
+
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f),
@@ -59,197 +58,195 @@ fun ScorePredictorScreen(
                 )
             }
         ) { paddingValues ->
-            Column(
+
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Enter Teams",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.White,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                OutlinedTextField(
-                    value = homeTeam,
-                    onValueChange = { homeTeam = it },
-                    label = { Text("Home Team", color = Color.White.copy(alpha = 0.9f)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
-                        focusedLabelColor = Color.White,
-                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White.copy(alpha = 0.9f),
-                        cursorColor = Color.White
+                item {
+                    Text(
+                        text = "Enter Teams",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White
                     )
-                )
-
-                OutlinedTextField(
-                    value = awayTeam,
-                    onValueChange = { awayTeam = it },
-                    label = { Text("Away Team", color = Color.White.copy(alpha = 0.9f)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
-                        focusedLabelColor = Color.White,
-                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White.copy(alpha = 0.9f),
-                        cursorColor = Color.White
-                    )
-                )
-
-                Button(
-                    onClick = {
-                        predictedScore = viewModel.predictScore(homeTeam, awayTeam)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = homeTeam.isNotBlank() && awayTeam.isNotBlank(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-                        contentColor = Color.White
-                    )
-                ) {
-                    Text("Predict Score")
                 }
 
-                // ===== New button to test API call =====
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        fetchStatus = "Fetching data..."
-                        footballRepo.fetchTeamsAndPlayerStats(2023, object : FootballRepository.DataCallback {
-                            override fun onSuccess(teamPlayerMap: Map<String, List<com.example.peakplaysscorepredictor.backend.APIResponseWrapper.PlayerWrapper>>) {
-                                fetchStatus = "Fetched data for ${teamPlayerMap.size} teams"
-                                playerData = teamPlayerMap
-                                android.util.Log.d("ScorePredictorScreen", fetchStatus)
-                            }
-
-                            override fun onError(error: String) {
-                                fetchStatus = "Error: $error"
-                                android.util.Log.e("ScorePredictorScreen", error)
-                            }
-                        })
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.9f),
-                        contentColor = Color.White
+                item {
+                    OutlinedTextField(
+                        value = homeTeam,
+                        onValueChange = { homeTeam = it },
+                        label = { Text("Home Team", color = Color.White.copy(alpha = 0.9f)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
+                            focusedLabelColor = Color.White,
+                            unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White.copy(alpha = 0.9f),
+                            cursorColor = Color.White
+                        )
                     )
-
-                ) {
-                    Text("Fetch Player Stats (Test API)")
                 }
 
-                Text(
-                    text = fetchStatus,
-                    color = Color.White,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-                if (playerData.isNotEmpty()) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
+                item {
+                    OutlinedTextField(
+                        value = awayTeam,
+                        onValueChange = { awayTeam = it },
+                        label = { Text("Away Team", color = Color.White.copy(alpha = 0.9f)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
+                            focusedLabelColor = Color.White,
+                            unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White.copy(alpha = 0.9f),
+                            cursorColor = Color.White
+                        )
+                    )
+                }
+
+                item {
+                    Button(
+                        onClick = {
+                            predictedScore = viewModel.predictScore(homeTeam, awayTeam)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = homeTeam.isNotBlank() && awayTeam.isNotBlank(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+                            contentColor = Color.White
+                        )
                     ) {
-                        playerData.forEach { (teamName, players) ->
-                            item {
-                                Text(
-                                    text = "Team: $teamName",
-                                    color = Color.Yellow,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    modifier = Modifier.padding(vertical = 8.dp)
-                                )
-                            }
-                            items(players.take(5), key = { it.player.id }) { playerWrapper ->
-                                val player = playerWrapper.player
-                                val stats = playerWrapper.statistics.firstOrNull()
+                        Text("Predict Score")
+                    }
+                }
 
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(bottom = 8.dp)
-                                ) {
-                                    Text("• ${player.name} (${stats?.games?.position ?: "N/A"})", color = Color.White)
-                                    Text("  - Goals: ${stats?.goals?.total ?: "N/A"}", color = Color.White)
-                                    Text("  - Assists: ${stats?.goals?.assists ?: "N/A"}", color = Color.White)
-                                    Text("  - Rating: ${stats?.games?.rating ?: "N/A"}", color = Color.White)
+                item {
+                    Button(
+                        onClick = {
+                            fetchStatus = "Fetching data..."
+                            footballRepo.fetchTeamsAndPlayerStats(2023, object : FootballRepository.DataCallback {
+                                override fun onSuccess(teamPlayerMap: Map<String, List<APIResponseWrapper.PlayerWrapper>>) {
+                                    fetchStatus = "Fetched data for ${teamPlayerMap.size} teams"
+                                    playerData = teamPlayerMap
+                                    android.util.Log.d("ScorePredictorScreen", fetchStatus)
                                 }
+
+                                override fun onError(error: String) {
+                                    fetchStatus = "Error: $error"
+                                    android.util.Log.e("ScorePredictorScreen", error)
+                                }
+                            })
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.9f),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("Fetch Player Stats (Test API)")
+                    }
+                }
+
+                item {
+                    Text(
+                        text = fetchStatus,
+                        color = Color.White
+                    )
+                }
+
+                if (playerData.isNotEmpty()) {
+                    playerData.forEach { (teamName, players) ->
+                        item {
+                            Text(
+                                text = "Team: $teamName",
+                                color = Color.Yellow,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+
+                        items(players, key = { it.player.id }) { playerWrapper ->
+                            val player = playerWrapper.player
+                            val stats = playerWrapper.statistics.firstOrNull()
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp)
+                            ) {
+                                Text("• ${player.name} (${stats?.games?.position ?: "N/A"})", color = Color.White)
+                                Text("  - Goals: ${stats?.goals?.total ?: "N/A"}", color = Color.White)
+                                Text("  - Assists: ${stats?.goals?.assists ?: "N/A"}", color = Color.White)
+                                Text("  - Rating: ${stats?.games?.rating ?: "N/A"}", color = Color.White)
                             }
                         }
                     }
                 }
 
-                // =====================================
-
                 if (predictedScore.isNotEmpty()) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.9f)
-                        )
-                    ) {
-                        Column(
+                    item {
+                        Card(
                             modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.9f)
+                            )
                         ) {
-                            Text(
-                                text = "Predicted Score",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = Color.White
-                            )
-                            Text(
-                                text = predictedScore,
-                                style = MaterialTheme.typography.headlineLarge,
-                                color = Color.White,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
+                            Column(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "Predicted Score",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = predictedScore,
+                                    style = MaterialTheme.typography.headlineLarge,
+                                    color = Color.White,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                            }
                         }
                     }
                 }
 
                 if (recentPredictions.isNotEmpty()) {
-                    Text(
-                        text = "Recent Predictions",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White,
-                        modifier = Modifier.padding(top = 16.dp)
-                    )
+                    item {
+                        Text(
+                            text = "Recent Predictions",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White
+                        )
+                    }
 
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(recentPredictions.reversed()) { prediction ->
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
-                                )
-                            ) {
-                                Text(
-                                    text = "${prediction.homeTeam} vs ${prediction.awayTeam}: ${prediction.score}",
-                                    modifier = Modifier.padding(16.dp),
-                                    textAlign = TextAlign.Center,
-                                    color = Color.White
-                                )
-                            }
+                    items(recentPredictions.reversed()) { prediction ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
+                            )
+                        ) {
+                            Text(
+                                text = "${prediction.homeTeam} vs ${prediction.awayTeam}: ${prediction.score}",
+                                modifier = Modifier.padding(16.dp),
+                                textAlign = TextAlign.Center,
+                                color = Color.White
+                            )
                         }
                     }
                 }
             }
         }
     }
-} 
+}
