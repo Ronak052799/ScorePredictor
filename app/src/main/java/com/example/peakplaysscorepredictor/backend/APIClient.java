@@ -8,7 +8,7 @@ public class APIClient {
 
     // For now, hardcoded API key - you can secure this later
     // Key - ca4a7aa31abf3acae6136d24af8a2e65
-    private static final String API_KEY = " ";
+    private static final String API_KEY = "ca4a7aa31abf3acae6136d24af8a2e65";
 
     private static Retrofit retrofit;
     private static FootballAPIService apiService;

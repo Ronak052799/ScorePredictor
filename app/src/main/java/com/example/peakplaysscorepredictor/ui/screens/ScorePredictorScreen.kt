@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,10 +15,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.peakplaysscorepredictor.backend.FootballRepository
-import com.example.peakplaysscorepredictor.backend.APIResponseWrapper
 import com.example.peakplaysscorepredictor.ui.theme.GalaxyBackground
 import com.example.peakplaysscorepredictor.ui.viewmodels.ScorePredictorViewModel
+import com.example.peakplaysscorepredictor.backend.FootballRepository.Team
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,12 +26,13 @@ fun ScorePredictorScreen(
     navController: NavController,
     viewModel: ScorePredictorViewModel = viewModel()
 ) {
-    val footballRepo = remember { FootballRepository() }
-    var fetchStatus by remember { mutableStateOf("Idle") }
-    var playerData by remember { mutableStateOf<Map<String, List<APIResponseWrapper.PlayerWrapper>>>(emptyMap()) }
-    var homeTeam by remember { mutableStateOf("") }
-    var awayTeam by remember { mutableStateOf("") }
-    var predictedScore by remember { mutableStateOf("") }
+    var selectedSeason by remember { mutableStateOf("") }
+    var homeTeam by remember { mutableStateOf<Team?>(null) }
+    var awayTeam by remember { mutableStateOf<Team?>(null) }
+
+    val availableTeams by viewModel.availableTeams.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val predictedResult by viewModel.predictedResult.collectAsState()
     val recentPredictions by viewModel.recentPredictions.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -46,14 +48,13 @@ fun ScorePredictorScreen(
                         IconButton(onClick = { navController.navigateUp() }) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Back to home",
+                                contentDescription = "Back",
                                 tint = Color.White
                             )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
-                        titleContentColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
                     )
                 )
             }
@@ -68,36 +69,14 @@ fun ScorePredictorScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 item {
-                    Text(
-                        text = "Enter Teams",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White
-                    )
-                }
-
-                item {
                     OutlinedTextField(
-                        value = homeTeam,
-                        onValueChange = { homeTeam = it },
-                        label = { Text("Home Team", color = Color.White.copy(alpha = 0.9f)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.White,
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
-                            focusedLabelColor = Color.White,
-                            unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White.copy(alpha = 0.9f),
-                            cursorColor = Color.White
-                        )
-                    )
-                }
-
-                item {
-                    OutlinedTextField(
-                        value = awayTeam,
-                        onValueChange = { awayTeam = it },
-                        label = { Text("Away Team", color = Color.White.copy(alpha = 0.9f)) },
+                        value = selectedSeason,
+                        onValueChange = { newValue ->
+                            if (newValue.all { it.isDigit() }) {
+                                selectedSeason = newValue
+                            }
+                        },
+                        label = { Text("Enter Season (e.g. 2023)", color = Color.White) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.White,
@@ -114,82 +93,68 @@ fun ScorePredictorScreen(
                 item {
                     Button(
                         onClick = {
-                            predictedScore = viewModel.predictScore(homeTeam, awayTeam)
+                            val seasonInt = selectedSeason.toIntOrNull()
+                            if (seasonInt == null) {
+                                viewModel.fetchTeamsForSeason(-1) // reset or error state
+                            } else {
+                                viewModel.fetchTeamsForSeason(seasonInt)
+                                homeTeam = null
+                                awayTeam = null
+                            }
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = homeTeam.isNotBlank() && awayTeam.isNotBlank(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
                             contentColor = Color.White
                         )
                     ) {
-                        Text("Predict Score")
+                        Text("Fetch Teams")
                     }
                 }
 
-                item {
-                    Button(
-                        onClick = {
-                            fetchStatus = "Fetching data..."
-                            footballRepo.fetchTeamsAndPlayerStats(2023, object : FootballRepository.DataCallback {
-                                override fun onSuccess(teamPlayerMap: Map<String, List<APIResponseWrapper.PlayerWrapper>>) {
-                                    fetchStatus = "Fetched data for ${teamPlayerMap.size} teams"
-                                    playerData = teamPlayerMap
-                                    android.util.Log.d("ScorePredictorScreen", fetchStatus)
-                                }
-
-                                override fun onError(error: String) {
-                                    fetchStatus = "Error: $error"
-                                    android.util.Log.e("ScorePredictorScreen", error)
-                                }
-                            })
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.9f),
-                            contentColor = Color.White
+                if (availableTeams.isNotEmpty()) {
+                    item {
+                        TeamDropdown(
+                            label = "Home Team",
+                            teams = availableTeams,
+                            selectedTeam = homeTeam,
+                            onTeamSelected = { homeTeam = it }
                         )
-                    ) {
-                        Text("Fetch Player Stats (Test API)")
+                    }
+
+                    item {
+                        TeamDropdown(
+                            label = "Away Team",
+                            teams = availableTeams,
+                            selectedTeam = awayTeam,
+                            onTeamSelected = { awayTeam = it }
+                        )
                     }
                 }
 
-                item {
-                    Text(
-                        text = fetchStatus,
-                        color = Color.White
-                    )
-                }
-
-                if (playerData.isNotEmpty()) {
-                    playerData.forEach { (teamName, players) ->
-                        item {
-                            Text(
-                                text = "Team: $teamName",
-                                color = Color.Yellow,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
-
-                        items(players, key = { it.player.id }) { playerWrapper ->
-                            val player = playerWrapper.player
-                            val stats = playerWrapper.statistics.firstOrNull()
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 8.dp)
-                            ) {
-                                Text("• ${player.name} (${stats?.games?.position ?: "N/A"})", color = Color.White)
-                                Text("  - Goals: ${stats?.goals?.total ?: "N/A"}", color = Color.White)
-                                Text("  - Assists: ${stats?.goals?.assists ?: "N/A"}", color = Color.White)
-                                Text("  - Rating: ${stats?.games?.rating ?: "N/A"}", color = Color.White)
-                            }
+                if (homeTeam != null && awayTeam != null) {
+                    item {
+                        Button(
+                            onClick = {
+                                val seasonInt = selectedSeason.toIntOrNull()
+                                if (seasonInt != null) {
+                                    viewModel.predictWinner(homeTeam!!, awayTeam!!, seasonInt)
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Predict Winner")
                         }
                     }
                 }
 
-                if (predictedScore.isNotEmpty()) {
+                if (errorMessage.isNotEmpty()) {
+                    item {
+                        Text(errorMessage, color = Color.Red)
+                    }
+                }
+
+                predictedResult?.let { prediction ->
                     item {
                         Card(
                             modifier = Modifier
@@ -200,21 +165,14 @@ fun ScorePredictorScreen(
                             )
                         ) {
                             Column(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .fillMaxWidth(),
+                                modifier = Modifier.padding(16.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
+                                Text("Predicted Winner", style = MaterialTheme.typography.titleMedium, color = Color.White)
                                 Text(
-                                    text = "Predicted Score",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = Color.White
-                                )
-                                Text(
-                                    text = predictedScore,
+                                    "${prediction.predictedWinner} (${String.format("%.1f", prediction.confidence)}%)",
                                     style = MaterialTheme.typography.headlineLarge,
-                                    color = Color.White,
-                                    modifier = Modifier.padding(vertical = 8.dp)
+                                    color = Color.White
                                 )
                             }
                         }
@@ -223,11 +181,7 @@ fun ScorePredictorScreen(
 
                 if (recentPredictions.isNotEmpty()) {
                     item {
-                        Text(
-                            text = "Recent Predictions",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White
-                        )
+                        Text("Recent Predictions", style = MaterialTheme.typography.titleMedium, color = Color.White)
                     }
 
                     items(recentPredictions.reversed()) { prediction ->
@@ -238,7 +192,7 @@ fun ScorePredictorScreen(
                             )
                         ) {
                             Text(
-                                text = "${prediction.homeTeam} vs ${prediction.awayTeam}: ${prediction.score}",
+                                text = "${prediction.homeTeam} vs ${prediction.awayTeam}: Winner - ${prediction.predictedWinner} (${String.format("%.1f", prediction.confidence)}%)",
                                 modifier = Modifier.padding(16.dp),
                                 textAlign = TextAlign.Center,
                                 color = Color.White
@@ -246,6 +200,52 @@ fun ScorePredictorScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun TeamDropdown(
+    label: String,
+    teams: List<Team>,
+    selectedTeam: Team?,
+    onTeamSelected: (Team) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        OutlinedTextField(
+            value = selectedTeam?.name ?: "",
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label, color = Color.White) },
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                IconButton(onClick = { expanded = true }) {
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.White)
+                }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.White,
+                unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
+                focusedLabelColor = Color.White,
+                unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White.copy(alpha = 0.9f),
+                cursorColor = Color.White
+            )
+        )
+
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            teams.forEach { team ->
+                DropdownMenuItem(
+                    text = { Text(team.name) },
+                    onClick = {
+                        onTeamSelected(team)
+                        expanded = false
+                    }
+                )
             }
         }
     }
