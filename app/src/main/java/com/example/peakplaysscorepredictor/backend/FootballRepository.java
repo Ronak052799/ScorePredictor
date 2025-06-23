@@ -118,6 +118,68 @@ public class FootballRepository {
             callback.onSuccess(teamPlayerMap);
         }).start();
     }
+    public interface FixtureCallback {
+        void onSuccess(List<FixtureResponseWrapper.FixtureData> fixtures);
+        void onError(String error);
+    }
+
+    public void fetchRecentFixtures(int teamId, int season, FixtureCallback callback) {
+        Call<FixtureResponseWrapper.ApiResponse> call = apiService.getRecentFixtures(
+                teamId,
+                5, // number of recent fixtures
+                season,
+                39, // leagueId for Premier League
+                APIClient.getApiKey()
+        );
+
+        call.enqueue(new Callback<FixtureResponseWrapper.ApiResponse>() {
+            @Override
+            public void onResponse(Call<FixtureResponseWrapper.ApiResponse> call, Response<FixtureResponseWrapper.ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body().getResponse());
+                } else {
+                    callback.onError("Failed to fetch fixtures: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FixtureResponseWrapper.ApiResponse> call, Throwable t) {
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
+    }
+    public interface HeadToHeadCallback {
+        void onSuccess(List<FixtureResponseWrapper.FixtureData> fixtures);
+        void onError(String error);
+    }
+    public void fetchHeadToHeadFixtures(int teamId1, int teamId2, HeadToHeadCallback callback) {
+        String h2hParam = teamId1 + "-" + teamId2;
+
+        Call<FixtureResponseWrapper.ApiResponse> call = apiService.getHeadToHeadFixtures(
+                h2hParam,
+                3, // last 3 fixtures
+                APIClient.getApiKey()
+        );
+
+        call.enqueue(new Callback<FixtureResponseWrapper.ApiResponse>() {
+            @Override
+            public void onResponse(Call<FixtureResponseWrapper.ApiResponse> call, Response<FixtureResponseWrapper.ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body().getResponse());
+                } else {
+                    callback.onError("Failed to fetch head-to-head: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FixtureResponseWrapper.ApiResponse> call, Throwable t) {
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
+    }
+
+
+
 
 
 }

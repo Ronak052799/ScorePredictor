@@ -13,7 +13,7 @@ public class APIClient {
     private static Retrofit retrofit;
     private static FootballAPIService apiService;
 
-    public static FootballAPIService getAPIService() {
+    public  static FootballAPIService getAPIService() {
         if (retrofit == null) {
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
