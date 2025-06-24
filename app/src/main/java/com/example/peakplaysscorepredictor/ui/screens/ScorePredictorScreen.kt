@@ -1,10 +1,12 @@
 package com.example.peakplaysscorepredictor.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,6 +35,34 @@ fun ScorePredictorScreen(
     var awayTeam by remember { mutableStateOf("") }
     var predictedScore by remember { mutableStateOf("") }
     val recentPredictions by viewModel.recentPredictions.collectAsState()
+    
+    // Dropdown states
+    var homeTeamExpanded by remember { mutableStateOf(false) }
+    var awayTeamExpanded by remember { mutableStateOf(false) }
+    
+    // Premier League teams list
+    val premierLeagueTeams = listOf(
+        "Arsenal",
+        "Aston Villa", 
+        "Bournemouth",
+        "Brentford",
+        "Brighton & Hove Albion",
+        "Burnley",
+        "Chelsea",
+        "Crystal Palace",
+        "Everton",
+        "Fulham",
+        "Liverpool",
+        "Luton Town",
+        "Manchester City",
+        "Manchester United",
+        "Newcastle United",
+        "Nottingham Forest",
+        "Sheffield United",
+        "Tottenham Hotspur",
+        "West Ham United",
+        "Wolverhampton Wanderers"
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         GalaxyBackground()
@@ -68,56 +98,128 @@ fun ScorePredictorScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Enter Teams",
+                    text = "Select Teams",
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                OutlinedTextField(
-                    value = homeTeam,
-                    onValueChange = { homeTeam = it },
-                    label = { Text("Home Team", color = Color.White.copy(alpha = 0.9f)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
-                        focusedLabelColor = Color.White,
-                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White.copy(alpha = 0.9f),
-                        cursorColor = Color.White
+                // Home Team Dropdown
+                ExposedDropdownMenuBox(
+                    expanded = homeTeamExpanded,
+                    onExpandedChange = { homeTeamExpanded = it },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = homeTeam,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Home Team", color = Color.White.copy(alpha = 0.9f)) },
+                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown", tint = Color.White) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
+                            focusedLabelColor = Color.White,
+                            unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White.copy(alpha = 0.9f),
+                            cursorColor = Color.White
+                        )
                     )
-                )
+                    
+                    ExposedDropdownMenu(
+                        expanded = homeTeamExpanded,
+                        onDismissRequest = { homeTeamExpanded = false },
+                        modifier = Modifier.background(Color.Black.copy(alpha = 0.9f))
+                    ) {
+                        premierLeagueTeams.forEach { team ->
+                            DropdownMenuItem(
+                                text = { Text(team, color = Color.White) },
+                                onClick = {
+                                    homeTeam = team
+                                    homeTeamExpanded = false
+                                },
+                                modifier = Modifier.background(
+                                    if (homeTeam == team) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                                    else Color.Transparent
+                                )
+                            )
+                        }
+                    }
+                }
 
-                OutlinedTextField(
-                    value = awayTeam,
-                    onValueChange = { awayTeam = it },
-                    label = { Text("Away Team", color = Color.White.copy(alpha = 0.9f)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
-                        focusedLabelColor = Color.White,
-                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White.copy(alpha = 0.9f),
-                        cursorColor = Color.White
+                // Away Team Dropdown
+                ExposedDropdownMenuBox(
+                    expanded = awayTeamExpanded,
+                    onExpandedChange = { awayTeamExpanded = it },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = awayTeam,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Away Team", color = Color.White.copy(alpha = 0.9f)) },
+                        trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown", tint = Color.White) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
+                            focusedLabelColor = Color.White,
+                            unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White.copy(alpha = 0.9f),
+                            cursorColor = Color.White
+                        )
                     )
-                )
+                    
+                    ExposedDropdownMenu(
+                        expanded = awayTeamExpanded,
+                        onDismissRequest = { awayTeamExpanded = false },
+                        modifier = Modifier.background(Color.Black.copy(alpha = 0.9f))
+                    ) {
+                        premierLeagueTeams.forEach { team ->
+                            DropdownMenuItem(
+                                text = { Text(team, color = Color.White) },
+                                onClick = {
+                                    awayTeam = team
+                                    awayTeamExpanded = false
+                                },
+                                modifier = Modifier.background(
+                                    if (awayTeam == team) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                                    else Color.Transparent
+                                )
+                            )
+                        }
+                    }
+                }
 
                 Button(
                     onClick = {
                         predictedScore = viewModel.predictScore(homeTeam, awayTeam)
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = homeTeam.isNotBlank() && awayTeam.isNotBlank(),
+                    enabled = homeTeam.isNotBlank() && awayTeam.isNotBlank() && homeTeam != awayTeam,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
                         contentColor = Color.White
                     )
                 ) {
                     Text("Predict Score")
+                }
+
+                // Show warning if same team is selected
+                if (homeTeam.isNotBlank() && awayTeam.isNotBlank() && homeTeam == awayTeam) {
+                    Text(
+                        text = "Please select different teams for home and away",
+                        color = Color.Red.copy(alpha = 0.8f),
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center
+                    )
                 }
 
                 // ===== New button to test API call =====
