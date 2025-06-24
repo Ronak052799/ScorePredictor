@@ -22,4 +22,22 @@ public interface FootballAPIService {
             @Header("x-apisports-key") String apiSportsKey,
             @Query("page") int page
     );
+
+    @GET("fixtures")
+    Call<FixtureResponseWrapper.ApiResponse> getRecentFixtures(
+            @Query("team") int teamId,
+            @Query("last") int lastCount,
+            @Query("season") int season,
+            @Query("league") int leagueId, // usually 39 for Premier League
+            @Header("x-apisports-key") String apiSportsKey
+
+            );
+    @GET("fixtures/headtohead")
+    Call<FixtureResponseWrapper.ApiResponse> getHeadToHeadFixtures(
+            @Query("h2h") String h2h,
+            @Query("last") int last,
+            @Header("x-apisports-key") String apiKey
+    );
+
+
 }
