@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -49,6 +50,12 @@ fun HomeScreen(navController: NavController) {
                         label = { Text("Predict", color = Color.White) },
                         selected = false,
                         onClick = { navController.navigate("score_predictor") }
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Star, contentDescription = "Preview", tint = Color.White) },
+                        label = { Text("Preview", color = Color.White) },
+                        selected = false,
+                        onClick = { navController.navigate("match_preview") }
                     )
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Info, contentDescription = "News", tint = Color.White) },

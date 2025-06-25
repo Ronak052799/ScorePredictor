@@ -8,6 +8,7 @@ import com.example.peakplaysscorepredictor.ui.screens.HomeScreen
 import com.example.peakplaysscorepredictor.ui.screens.ScorePredictorScreen
 import com.example.peakplaysscorepredictor.ui.screens.TeamsScreen
 import com.example.peakplaysscorepredictor.ui.screens.NewsScreen
+import com.example.peakplaysscorepredictor.ui.screens.MatchPreviewScreen
 
 @Composable
 fun ScorePredictorApp() {
@@ -25,6 +26,9 @@ fun ScorePredictorApp() {
         }
         composable("news") {
             NewsScreen(navController)
+        }
+        composable("match_preview") {
+            MatchPreviewScreen(navController)
         }
     }
 } 
