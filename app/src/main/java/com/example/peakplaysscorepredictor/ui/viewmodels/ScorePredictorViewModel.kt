@@ -14,7 +14,8 @@ data class Prediction(
     val homeTeam: String,
     val awayTeam: String,
     val predictedWinner: String,
-    val confidence: Double
+    val confidence: Double,
+    val score: String = ""
 )
 
 class ScorePredictorViewModel : ViewModel() {
@@ -98,7 +99,8 @@ class ScorePredictorViewModel : ViewModel() {
                         homeTeam = homeTeam.name,
                         awayTeam = awayTeam.name,
                         predictedWinner = result.winner,
-                        confidence = result.confidenceScore
+                        confidence = result.confidenceScore,
+                        score = "2 - 1" // Placeholder score
                     )
 
                     viewModelScope.launch(Dispatchers.Main) {
@@ -114,5 +116,32 @@ class ScorePredictorViewModel : ViewModel() {
                 }
             })
         }
+    }
+
+    fun predictScore(homeTeam: String, awayTeam: String): String {
+        if (homeTeam.isBlank() || awayTeam.isBlank()) {
+            return ""
+        }
+        
+        if (homeTeam == awayTeam) {
+            return ""
+        }
+        
+        // Simple score prediction logic
+        val homeGoals = (1..3).random()
+        val awayGoals = (0..2).random()
+        val score = "$homeGoals - $awayGoals"
+        
+        val prediction = Prediction(
+            homeTeam = homeTeam,
+            awayTeam = awayTeam,
+            predictedWinner = if (homeGoals > awayGoals) homeTeam else awayTeam,
+            confidence = 65.0 + (0..20).random(),
+            score = score
+        )
+        
+        _recentPredictions.value = _recentPredictions.value + prediction
+        
+        return score
     }
 }
